@@ -13,6 +13,16 @@ function createDeck() {
     return [...CARD_IMAGES, ...CARD_IMAGES];
 }
 
+function shuffleDeck(deck) {
+    for (let i = deck.length - 1; i > 0; i -= 1) {
+        const randomIndex = Math.floor(Math.random() * (i + 1));
+
+        [deck[i], deck[randomIndex]] = [deck[randomIndex], deck[i]];
+    }
+
+    return deck;
+}
+
 function createHeader() {
     const header = document.createElement('header');
     header.className = 'header';
@@ -74,7 +84,7 @@ function createMain() {
     const gameBoard = document.createElement('div');
     gameBoard.className = 'game-board';
 
-    const deck = createDeck();
+    const deck = shuffleDeck(createDeck());
 
     deck.forEach(imagePath => {
         const card = createCard(imagePath);
