@@ -105,4 +105,18 @@ body {
     width: 80%;
     height: 80%;
     object-fit: contain;
+    opacity: 0;
+    transform: scale(0.7);
+    transition:
+        opacity 0.2s,
+        transform 0.2s;
+}
+
+.game-board-card.is-open {
+    background-color: var(--surface);
+}
+
+.game-board-card.is-open .game-board-card-image {
+    opacity: 1;
+    transform: scale(1);
 }
