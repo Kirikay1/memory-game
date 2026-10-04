@@ -264,7 +264,14 @@ function openLeaderboard() {
     title.className = 'modal-title';
     title.textContent = 'Таблица лидеров';
 
-    const results = getLeaderboard();
+    const results = getLeaderboard()
+        .sort((firstResult, secondResult) => {
+            return (
+                firstResult.moves - secondResult.moves ||
+                firstResult.completedAt - secondResult.completedAt
+            );
+        })
+        .slice(0, MAX_LEADERBOARD_RESULTS);
     let content;
 
     if (results.length === 0) {
