@@ -9,17 +9,28 @@ const CARD_IMAGES = [
     './img/emoji-8.png',
 ];
 
-function createDeck() {
-    return [...CARD_IMAGES, ...CARD_IMAGES];
-}
-
 const gameState = {
     firstCard: null,
     secondCard: null,
     moves: 0,
     matchedPairs: 0,
     isLocked: false,
+    closeTimerId: null,
 };
+
+function createDeck() {
+    return [...CARD_IMAGES, ...CARD_IMAGES];
+}
+
+function shuffleDeck(deck) {
+    for (let i = deck.length - 1; i > 0; i -= 1) {
+        const randomIndex = Math.floor(Math.random() * (i + 1));
+
+        [deck[i], deck[randomIndex]] = [deck[randomIndex], deck[i]];
+    }
+
+    return deck;
+}
 
 function updateStats() {
     const movesElement = document.querySelector('.game-stats-moves');
@@ -33,39 +44,6 @@ function resetSelectedCards() {
     gameState.firstCard = null;
     gameState.secondCard = null;
     gameState.isLocked = false;
-}
-
-function shuffleDeck(deck) {
-    for (let i = deck.length - 1; i > 0; i -= 1) {
-        const randomIndex = Math.floor(Math.random() * (i + 1));
-
-        [deck[i], deck[randomIndex]] = [deck[randomIndex], deck[i]];
-    }
-
-    return deck;
-}
-
-function createHeader() {
-    const header = document.createElement('header');
-    header.className = 'header';
-
-    const container = document.createElement('div');
-    container.className = 'container header-container';
-
-    const newGameButton = document.createElement('button');
-    newGameButton.className = 'header-button';
-    newGameButton.type = 'button';
-    newGameButton.textContent = 'Новая игра';
-
-    const leaderBoardButton = document.createElement('button');
-    leaderBoardButton.className = 'header-button';
-    leaderBoardButton.type = 'button';
-    leaderBoardButton.textContent = 'Таблица лидеров';
-
-    container.append(newGameButton, leaderBoardButton);
-    header.append(container);
-
-    return header;
 }
 
 function handleCardClick(event) {
@@ -107,10 +85,11 @@ function handleCardClick(event) {
     const firstCard = gameState.firstCard;
     const secondCard = gameState.secondCard;
 
-    setTimeout(() => {
+    gameState.closeTimerId = setTimeout(() => {
         firstCard.classList.remove('is-open');
         secondCard.classList.remove('is-open');
 
+        gameState.closeTimerId = null;
         resetSelectedCards();
     }, 1000);
 }
@@ -133,6 +112,57 @@ function createCard(imagePath) {
     return card;
 }
 
+function renderDeck(gameBoard) {
+    const deck = shuffleDeck(createDeck());
+
+    const cards = deck.map(imagePath => {
+        return createCard(imagePath);
+    });
+
+    gameBoard.replaceChildren(...cards);
+}
+
+function startNewGame() {
+    if (gameState.closeTimerId !== null) {
+        clearTimeout(gameState.closeTimerId);
+        gameState.closeTimerId = null;
+    }
+
+    gameState.moves = 0;
+    gameState.matchedPairs = 0;
+
+    resetSelectedCards();
+
+    const gameBoard = document.querySelector('.game-board');
+
+    renderDeck(gameBoard);
+    updateStats();
+}
+
+function createHeader() {
+    const header = document.createElement('header');
+    header.className = 'header';
+
+    const container = document.createElement('div');
+    container.className = 'container header-container';
+
+    const newGameButton = document.createElement('button');
+    newGameButton.className = 'header-button';
+    newGameButton.type = 'button';
+    newGameButton.textContent = 'Новая игра';
+    newGameButton.addEventListener('click', startNewGame);
+
+    const leaderBoardButton = document.createElement('button');
+    leaderBoardButton.className = 'header-button';
+    leaderBoardButton.type = 'button';
+    leaderBoardButton.textContent = 'Таблица лидеров';
+
+    container.append(newGameButton, leaderBoardButton);
+    header.append(container);
+
+    return header;
+}
+
 function createMain() {
     const main = document.createElement('main');
     main.className = 'main';
@@ -152,12 +182,7 @@ function createMain() {
     const gameBoard = document.createElement('div');
     gameBoard.className = 'game-board';
 
-    const deck = shuffleDeck(createDeck());
-
-    deck.forEach(imagePath => {
-        const card = createCard(imagePath);
-        gameBoard.append(card);
-    });
+    renderDeck(gameBoard);
 
     gameStats.append(gameStatsMoves, gameStatsPairs);
     container.append(gameStats, gameBoard);
@@ -166,5 +191,9 @@ function createMain() {
     return main;
 }
 
-document.body.append(createHeader(), createMain());
-updateStats();
+function initApp() {
+    document.body.append(createHeader(), createMain());
+    updateStats();
+}
+
+initApp();
